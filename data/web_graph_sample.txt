@@ -1,0 +1,11 @@
+# Sample web graph for PageRank assignment
+# Format: node: neighbor1 neighbor2 ...
+# A node with no neighbors (e.g. "E:") is a dangling node.
+A: B C
+B: C
+C: A
+D: A C
+E:
+F: A B C D
+G: F
+H: A

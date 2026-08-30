@@ -1,0 +1,332 @@
+<role>
+Act as a senior data engineer, distributed-systems engineer, and professor reviewing a MapReduce/PageRank design.
+Your job is to help me produce a strong DESIGN document, NOT to implement the solution.
+</role>
+
+<authoritative_sources>
+The repository contains the official assignment and the professor's design template:
+
+- @docs/Tarea_PageRank_MapReduce.md
+- @docs/DESIGN_TEMPLATE.md
+
+Read both files before doing anything else.
+
+Treat those two files as the authoritative source for:
+- requirements
+- constraints
+- terminology
+- expected structure
+- mathematical formulation
+- deliverables
+- framework behavior
+- evaluation criteria
+
+Do not reproduce the assignment into your response. Extract the requirements you actually need and use them to reason about the design.
+</authoritative_sources>
+
+<objective>
+Create a proposed design for the PageRank MapReduce assignment and write it to @docs/DESIGN_ROYSANDOVAL.md in english.
+The goal is NOT to blindly fill the template.
+The goal is to derive a correct design from the constraints of the assignment and document the reasoning behind it.
+</objective>
+
+<important_constraint>
+Do NOT write the PageRank implementation.
+
+Do NOT modify:
+- mapreduce_framework.py
+- the assignment document
+- DESIGN_TEMPLATE.md
+
+Only create or modify @docs/DESIGN_ROYSANDOVAL.md
+</important_constraint>
+
+<design_first>
+Before writing the document, reason through the architecture carefully.
+
+Start from the central constraint:
+
+The provided MapReduce framework performs a single Map -> Shuffle -> Reduce pass, while PageRank requires repeated iterations.
+
+Derive the design from this constraint.
+
+Pay particular attention to the three difficult parts of the assignment:
+
+1. Iteration outside mapreduce()
+2. Preservation of graph structure between iterations
+3. Correct handling of dangling nodes
+</design_first>
+
+<required_reasoning>
+For every major design decision, explicitly reason about:
+
+- What information exists at the beginning of an iteration?
+- What information does the mapper need?
+- What information must survive the shuffle?
+- What information does the reducer need?
+- What information must be reconstructed for the next iteration?
+- What information is local to one node?
+- What information is global to the entire graph/iteration?
+- What could be lost between iterations?
+- What happens if the design fails to preserve that information?
+</required_reasoning>
+
+<mapreduce_schema>
+Be extremely precise about the MapReduce key-value schema.
+
+Define:
+
+1. The input item received by the mapper.
+2. Every type of message emitted by the mapper.
+3. The key and value of every message.
+4. The semantic purpose of every message.
+5. What values become grouped together during Shuffle.
+6. Exactly what the reducer receives for a particular node.
+7. Exactly what the reducer reconstructs and returns.
+
+Use a tiny concrete graph to make the data flow unambiguous.
+
+For example, you may use a graph containing nodes such as:
+
+A -> B, C
+B -> C
+C -> A
+E -> nothing
+
+Do not assume the reader can infer the message schema from prose alone.
+</mapreduce_schema>
+
+<graph_preservation>
+Give special attention to preserving adjacency.
+
+Explain:
+
+- Why adjacency must survive every iteration.
+- How the mapper preserves it.
+- How the reducer identifies and reconstructs it.
+- Why emitting only rank contributions is insufficient.
+- What exact information would disappear if adjacency were not preserved.
+
+This should be one of the strongest parts of the design because the assignment explicitly tests this reasoning.
+</graph_preservation>
+
+<dangling_nodes>
+Analyze dangling-node handling carefully.
+
+Do not simply state a formula.
+
+Explain the mathematical and MapReduce implications of the chosen approach.
+
+In particular:
+
+- distinguish a dangling node from a node with zero incoming links
+- explain where dangling rank comes from
+- explain how the dangling rank affects the next PageRank vector
+- explain how the design makes any iteration-global dangling-rank quantity available where necessary
+- explain how the approach preserves the approximately-1.0 rank-sum invariant
+- identify potential divide-by-zero issues
+- explain why the chosen strategy is compatible with the provided mapper/reducer interface
+
+If there are multiple viable approaches, compare them briefly and justify the chosen one.
+</dangling_nodes>
+
+<iteration_and_convergence>
+Design the outer iteration process conceptually.
+
+Explain:
+
+- initialization of ranks
+- one MapReduce pass
+- extraction of the new rank vector
+- comparison between consecutive vectors
+- L1 convergence criterion
+- epsilon
+- maximum-iteration safeguard
+- what happens when convergence occurs
+- what happens if convergence is not reached before the maximum
+
+The iteration loop must remain outside mapreduce(), as required by the assignment.
+</iteration_and_convergence>
+
+<correctness>
+Include a correctness argument.
+
+Do not attempt a formal proof unless useful.
+
+Instead, establish why the design preserves the PageRank semantics:
+
+- every node receives the teleportation/base component
+- every non-dangling node distributes its rank according to outgoing links
+- dangling rank is handled correctly
+- contributions are aggregated by destination
+- adjacency survives
+- the resulting state is sufficient to perform another iteration
+- the rank vector remains normalized approximately to 1.0
+
+Use a small example where useful.
+</correctness>
+
+<complexity>
+Include the design-level complexity analysis required by the assignment.
+
+Express the main quantities in terms of:
+
+N = number of nodes
+E = number of directed edges
+I = number of iterations
+
+Reason about:
+
+- mapper output volume
+- STRUCT messages
+- RANK messages
+- shuffle volume
+- reducer work
+- total work over I iterations
+- memory requirements
+- the effect of dangling nodes
+- the effect of high in-degree / data skew
+
+Use the dataset statistics from the assignment as a sanity check, rather than inventing new dataset characteristics.
+</complexity>
+
+<failure_analysis>
+Explicitly identify plausible designs that look reasonable but are incorrect or incomplete.
+
+At minimum consider:
+
+- emitting only rank contributions
+- forgetting to preserve adjacency
+- dividing by zero for dangling nodes
+- losing nodes that receive no rank contributions
+- confusing in-degree and out-degree
+- putting the iteration loop inside mapreduce()
+- incorrectly applying damping
+- incorrectly handling dangling rank
+- failing to preserve the rank-sum invariant
+- relying on Neo4j or another external graph framework when the assignment requires the provided Python framework
+
+For each, explain the failure briefly.
+</failure_analysis>
+
+<diagram>
+Create a clear and easy to understand diagram. If Draw.io MCP is available, use it; otherwise, default strictly to ASCII. Do not use more than 2 colors for the entire diagram. 
+
+The diagram should show one complete iteration:
+
+current graph state
+    |
+    v
+MAP
+    |
+    |-- STRUCT messages
+    |-- RANK messages
+    |
+    v
+SHUFFLE
+(group by node key)
+    |
+    v
+REDUCE
+    |
+    v
+next graph state
+    |
+    v
+convergence check
+    |
+    +---- not converged ---> next iteration
+    |
+    +---- converged -------> final ranks
+
+Make the diagram specific enough to communicate the actual message flow, not merely generic MapReduce boxes.
+</diagram>
+
+<document_structure>
+Use @docs/DESIGN_TEMPLATE.md as the structural basis for the document.
+
+Preserve its six main sections unless there is a compelling reason to improve clarity:
+
+1. Representación de los datos
+2. Esquema clave-valor por fase
+3. Preservación de la estructura del grafo
+4. Manejo de dangling nodes
+5. Iteración y convergencia
+6. Diagrama de una iteración
+
+You may add concise subsections or explanatory material where necessary, but do not turn the document into a completely different format.
+
+The final document should look like a student's thoughtful design document, not like an AI-generated tutorial.
+</document_structure>
+
+<language>
+Write the DESIGN document in the same language used by the professor's template.
+
+Keep technical identifiers such as:
+- MAP
+- SHUFFLE
+- REDUCE
+- mapper
+- reducer
+- STRUCT
+- RANK
+- PageRank
+- epsilon
+- L1
+
+exactly recognizable.
+</language>
+
+<quality_bar>
+Optimize for:
+
+1. Correctness
+2. Compliance with the assignment
+3. Explainability during oral defense
+4. Clear data flow
+5. Explicit handling of edge cases
+6. Mathematical consistency
+7. Simplicity where possible
+
+Do NOT optimize for sophistication.
+
+A simpler design that I can defend precisely is better than an elaborate design with unnecessary machinery.
+</quality_bar>
+
+<critical_review>
+Before writing the final document, challenge your own proposed design.
+
+Ask yourself:
+
+- Can every reducer invocation compute the correct new rank?
+- Can the graph structure be reconstructed completely?
+- Can every node survive even if it receives no incoming contributions?
+- Are dangling nodes handled without division by zero?
+- Is any required information global rather than local?
+- If information is global, how is it made available under this specific MapReduce interface?
+- Does the output have exactly the information required as input to the next iteration?
+- Does the rank-sum invariant make sense under the chosen dangling-node treatment?
+- Does the design actually comply with the provided framework rather than assuming Hadoop/Spark features that do not exist?
+- Can I explain every message emitted by the mapper in a 5-minute oral defense?
+
+If you discover a flaw, fix the design before writing the document.
+</critical_review>
+
+<final_action>
+Read the two authoritative documents first.
+
+Then reason through the design.
+
+Then create/update only:
+
+@docs/DESIGN_ROYSANDOVAL.md
+
+Do not write pagerank.py, tests, or any implementation code.
+
+After creating the document, briefly report:
+- that the design file was created
+- the main architectural decisions you made
+- any design tradeoff that I should personally review before submitting it
+
+Do not claim that the design is unquestionably correct. Flag anything that deserves my own verification or understanding.
+</final_action>

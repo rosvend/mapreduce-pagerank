@@ -1,0 +1,68 @@
+<mxfile host="app.diagrams.net" version="24.7.17">
+  <diagram id="pagerank-one-iteration" name="One PageRank iteration">
+    <mxGraphModel dx="1600" dy="700" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1900" pageHeight="500" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="MRBOX" value="one mapreduce() call  (single MAP -&gt; SHUFFLE -&gt; REDUCE pass)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#1f4e79;dashed=1;verticalAlign=top;fontColor=#1f4e79;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="260" y="20" width="1060" height="260" as="geometry" />
+        </mxCell>
+
+        <mxCell id="G0" value="Current graph state&#10;node -&gt; rank + out-links" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#444444;fontColor=#222222;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="20" y="120" width="200" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="LOOP" value="Outer Python loop  (plain Python, not MapReduce)&#10;initialise ranks  ·  compute dangling_sum  ·  test L1  ·  repeat" style="shape=note;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#444444;fontColor=#222222;fontSize=11;size=14;" vertex="1" parent="1">
+          <mxGeometry x="10" y="300" width="380" height="64" as="geometry" />
+        </mxCell>
+
+        <mxCell id="MAP" value="MAP&#10;emit per node:&#10;• its out-links&#10;• a rank share per out-link" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1f4e79;strokeColor=#1f4e79;fontColor=#ffffff;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="290" y="105" width="190" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="RNK" value="RANK&#10;a rank share to each neighbour" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#444444;fontColor=#222222;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="520" y="40" width="210" height="56" as="geometry" />
+        </mxCell>
+
+        <mxCell id="STR" value="STRUCT&#10;keeps who-links-to-whom" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#444444;fontColor=#222222;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="520" y="200" width="210" height="56" as="geometry" />
+        </mxCell>
+
+        <mxCell id="SHUF" value="SHUFFLE&#10;group every message&#10;by destination node" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1f4e79;strokeColor=#1f4e79;fontColor=#ffffff;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="780" y="105" width="170" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="RED" value="REDUCE  (per node)&#10;new rank = (1-d)/N + d × (dangling + incoming shares)&#10;then re-attach its out-links" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1f4e79;strokeColor=#1f4e79;fontColor=#ffffff;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1000" y="105" width="300" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="G1" value="Next graph state&#10;same shape -&gt; ready to iterate" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#444444;fontColor=#222222;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1360" y="120" width="200" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="CHK" value="L1 &lt; epsilon ?&#10;(or max_iter)" style="rhombus;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#444444;fontColor=#222222;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1610" y="100" width="200" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="FIN" value="Final PageRank&#10;sum of ranks ~ 1.0" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#444444;fontColor=#222222;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1860" y="120" width="180" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="l1" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#444444;endArrow=block;" edge="1" parent="1" source="LOOP" target="G0"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="a1" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#444444;endArrow=block;" edge="1" parent="1" source="G0" target="MAP"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="a2" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#444444;endArrow=block;" edge="1" parent="1" source="MAP" target="RNK"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="a3" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#444444;endArrow=block;" edge="1" parent="1" source="MAP" target="STR"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="a4" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#444444;endArrow=block;" edge="1" parent="1" source="RNK" target="SHUF"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="a5" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#444444;endArrow=block;" edge="1" parent="1" source="STR" target="SHUF"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="a6" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#444444;endArrow=block;" edge="1" parent="1" source="SHUF" target="RED"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="a7" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#444444;endArrow=block;" edge="1" parent="1" source="RED" target="G1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="a8" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#444444;endArrow=block;" edge="1" parent="1" source="G1" target="CHK"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="a9" value="yes" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#444444;endArrow=block;fontColor=#222222;fontSize=11;" edge="1" parent="1" source="CHK" target="FIN"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="a10" value="no: next iteration" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#444444;endArrow=block;dashed=1;fontColor=#222222;fontSize=11;" edge="1" parent="1" source="CHK" target="G0">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="1710" y="420" /><mxPoint x="120" y="420" /></Array></mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
