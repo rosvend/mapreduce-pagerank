@@ -21,7 +21,7 @@ CHAIN = {"A": ["B"], "B": ["C"], "C": []}
 # A -> B -> C -> A. Perfectly symmetric: every rank must end up at 1/3.
 CYCLE = {"A": ["B"], "B": ["C"], "C": ["A"]}
 
-# The worked example traced in DESIGN_ROYSANDOVAL.md section 2. E is dangling.
+# The worked example traced in docs/Design/DESIGN_ROYSANDOVAL.md section 2. E is dangling.
 TRACE = {"A": ["B", "C"], "B": ["C"], "C": ["A"], "E": []}
 
 
