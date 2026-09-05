@@ -1,0 +1,55 @@
+<role>
+You are a senior Python data engineer specialized in distributed systems and Hadoop-style MapReduce.
+</role>
+
+<context>
+This is an academic assignment. Full spec: @docs/Tarea_PageRank_MapReduce.md
+My approved design: @docs/DESIGN_ROYSANDOVAL.md
+Test graphs: @data/ (dev/verification on smaller graphs, official run on @data/web_graph_large.txt)
+Framework to build on top of (read-only): @src/mapreduce_framework.py
+
+Before writing any code, read the task spec and the design doc in full and confirm in one short paragraph that you understand:
+1. The key/value schema per phase (what the mapper emits, what the reducer returns)
+2. How graph structure (adjacency) survives across iterations
+3. How dangling nodes are handled
+If anything in @docs/DESIGN_ROYSANDOVAL.md is ambiguous or contradicts the task spec, stop and ask me before coding — do not silently resolve it yourself.
+</context>
+
+<task name="pagerank_mapreduce">
+Implement @src/pagerank.py using plain Python and @src/mapreduce_framework.py exactly as-is.
+
+<workflow>
+1. Read @test/ to see what test scaffolding/cases already exist (per the assignment, test_pagerank.py must cover: trivial chain, a cycle with symmetric ranks, a dangling node, and the sum-of-ranks ≈ 1.0 invariant).
+2. Write/complete failing tests first for each case above, matching the design doc's schema.
+3. Implement `mapper(item)` and `reducer(key, values)` per the framework's required signatures, following the message-type scheme defined in DESIGN_ROYSANDOVAL.md.
+4. Implement `run_pagerank(graph, d=0.85, max_iter=50, epsilon=1e-6)` as a separate function that loops calling `mapreduce()`, checks L1 convergence outside the framework, and returns final ranks.
+5. Run the test suite after each component (mapper, reducer, loop) — do not write the next piece until the previous one passes.
+6. Once all tests pass, run `run_pagerank` on @data/web_graph_large.txt and print/save the top-15 nodes by rank alongside their in-degree.
+7. Report back: iteration count to convergence, and confirm the sum-of-ranks invariant held throughout.
+</workflow>
+
+<acceptance_criteria>
+- All tests in @test/ pass
+- No modification to @src/mapreduce_framework.py
+- No imports outside the Python standard library
+- Sum of ranks stays ≈1.0 every iteration on all three graphs
+- Top-15 output produced for web_graph_large.txt
+</acceptance_criteria>
+</task>
+
+<constraints>
+- Do not modify @src/mapreduce_framework.py.
+- Standard library only — no networkx, numpy, or any other external package.
+- Comments: concise one-liners only, no block comments explaining obvious code.
+- KISS: code should be readable by a non-Python-developer. No abstractions, classes, or patterns beyond what the task strictly needs.
+- Stick to the design made previously unless you prove it fails.
+</constraints>
+
+<separate_task name="neo4j_visualization" note="run this as its own follow-up prompt/session, not mixed into the pagerank_mapreduce context above">
+Once the MapReduce implementation is done and verified, in a fresh context (or via a dispatched subagent in parallel) build a small, separate proof-of-concept:
+1. Load @data/ graph files into the already-running local docker Neo4j instance (bolt on default port, HTTP UI on 7474).
+2. Run Neo4j's built-in PageRank (GDS library) on the loaded graph.
+3. Produce a short animation (e.g. matplotlib/networkx frames, or a simple HTML/D3 page) showing rank values converging or propagating across a small subset of nodes — doesn't need to use the full 10k-node graph, a readable sample is fine.
+This is a supplementary demo, not part of the graded MapReduce deliverable — keep it simple and don't let it influence the pagerank.py design above.
+4. Measure the time per iteration on the large graph and plot it. Estimate how long it would take with 10x or 100x more nodes, this should demonstrate that spark is faster since it lives in memory while mapreduce reads the entire disk each iteration. 
+</separate_task>
